@@ -1,0 +1,5 @@
+# ignore textbooks
+*.pdf
+
+# ignore class notes
+*.org
