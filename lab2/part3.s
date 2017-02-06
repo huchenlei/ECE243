@@ -21,7 +21,7 @@
 	       .word B
 	    B: .word -1
 	       .word C
-	    C: .word -2
+	    C: .word -2	
 	       .word E + 8
 	    D: .word 2
 	       .word C
