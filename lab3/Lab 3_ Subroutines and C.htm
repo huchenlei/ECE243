@@ -1,0 +1,407 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0067)http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="./Lab 3_ Subroutines and C_files/style.css">
+    
+    <title>Lab 3: Subroutines and C</title>
+    <script type="text/javascript" src="./Lab 3_ Subroutines and C_files/jquery-1.12.0.min.js"></script>
+    <style type="text/css">
+        div#remind { display:none; position:fixed; left:0; top:0; width: 80vw; height: 60vh; 
+        padding: 10vh 10vw 30vh 10vw;
+        text-align: center;
+        background: rgba(248, 248, 248, 0.9);
+        font: bold 36pt sans-serif;}
+    </style>    
+  <link type="text/css" rel="stylesheet" href="chrome-extension://ckphchjljlekndhjifdfpmmnlaijimcd/style.css"></head>
+  <body screen_capture_injected="true">
+    <div id="remind" onclick="$(&#39;#remind&#39;).fadeOut();" style="display: none;">
+        Did you submit your code yet?<br>
+    </div>
+    <script type="text/javascript">
+  window.onbeforeunload = function(evt) {
+    $('#remind').show();
+    var message = 'Did you submit your code yet?';
+    if (typeof evt == 'undefined') {
+        evt = window.event;
+    }
+    if (evt) {
+        evt.returnValue = message;
+    }
+    window.onbeforeunload = null;   // Just remind once?
+    return message;
+}
+  </script>
+  
+    <h1>Lab 3: Subroutines and C</h1>
+    <center>
+      <br>
+      <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html#description">Description</a><br>
+	  <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html#abi">More on the Nios II Application Binary Interface</a><br>
+      <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html#preparation">Preparation (2 marks)</a><br>
+      <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html#inlab">In Lab (2 marks)</a><br>
+      <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/subroutines.html#quiz">Quiz (1 mark)</a><br>
+    </center>
+
+    <a name="description"></a>
+    <h2>Description</h2>
+    <p>The purpose of this lab is to introduce subroutines, by
+    writing assembly language subroutines that call and are called by C subroutines.</p>
+    
+    <p>The purpose of a subroutine is to decompose a larger program into relatively self-contained
+    modules that can be easily <i>composed</i> together. Since functions are often written by different
+    people (or compilers), functions must agree on a common set of rules on how they interact: 
+    how to pass parameters from caller to callee, how to pass a return value back to the caller,
+    and what registers a function is allowed to modify ("clobber"). This set of rules is commonly known
+    as an Application Binary Interface (ABI). Following an ABI allows functions to call other functions
+    without needing to know the internal details of the functions. We will be using the 
+    <a href="http://www.altera.com/literature/hb/nios2/n2cpu_nii51016.pdf">Nios II ABI</a> (mainly pages 2 to 8).</p>
+
+    <p>In this lab, you are provided with three functions in C (that obey the Nios II ABI). Each function takes one
+    integer parameter and prints it out (on the Monitor program's Terminal) as an octal, hexadecimal, and decimal number, respectively:</p>
+    <table class="border"><tbody>
+        <tr>
+          <td>
+<pre>void printOct ( int val );
+void printHex ( int val );
+void printDec ( int val ); </pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+    For example, calling <tt>printOct(10)</tt> results in <tt>12</tt> being printed on the terminal.</p>
+
+	<h3>Preparation: Do the questions from the Preparation section below before attempting to write the code.</h3>
+	<p>Yes, really.</p>
+	<h3>Part 1: Calling a function (0 marks)</h3>
+	
+	<p>Write an assembly program that prints out 10 in octal, hexadecimal, and decimal. The output should be
+	the following: 
+    </p>
+	    <table class="border"><tbody>
+        <tr>
+          <td style="padding-right:5em;">
+<pre>12
+A
+10</pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+	
+	<ul><li>Since your project will include C files, set the project type to "C Program". Add lab3_print.c and your
+	assembly code (lab3_part1_main.s) to your project. Make a global label <tt>main</tt> as the entry point to your program, since the
+	C runtime expects your program to always begin at <tt>main</tt>.
+	</li>
+	<li>There will be some startup code from the C library that executes before <tt>main</tt> is called. When debugging, use a
+	breakpoint to skip past the startup code
+	</li>
+	<li>Hint: The assembly program should need around 10 instructions.</li>
+	</ul>
+	
+	<h3>Part 2: Being called by a function (2 marks)</h3>
+	<p>In this part, you are to write an assembly function that is both called by a C function,
+	<i>and</i> calls other C functions. You are given a <code>main</code> function in C
+    (lab3_main.c, see below). </p>
+    
+    <p>The program begins executing in the C <code>main</code> function.
+    The <code>main</code> function calls a function called
+      <code>printn</code>, which you are
+      required to write <i>in assembly</i>. Some numbers are passed to <code>printn</code>, 
+      which should print out each number in either octal, hexadecimal, or decimal.
+      Use the three C functions from Part 1 to do the printing by calling them from your
+    assembly <code>printn</code> function.</p>
+      
+      
+      
+      <p>The definition of the <code>printn</code>
+      function, in C syntax, looks as follows:</p>
+
+    <table class="border"><tbody>
+        <tr>
+          <td>
+<pre>void printn ( char *fmt, ... ); </pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The <code>printn</code> function takes one string parameter (<code>fmt</code>)
+      followed by zero or more integer parameters. "..." in C means a variable number of arguments, similar to <code>printf</code> or <code>scanf</code>.
+       The <code>printn</code> function's purpose is to print out a variable
+    number of integers, printing each integer in one of three number formats
+    (decimal, hexadecimal, and octal). The first parameter (<code>fmt</code>)
+    specifies a string (pointer to null-terminated array of chars) that defines two things:
+    </p>
+    <ul>
+      <li> how many numbers are to be printed as determined by
+        the size of the string (in C, the end of a string is indicated by
+        a zero <code>'\0'</code> character)
+      </li>
+      <li>the format in which the numbers will be printed: <code>'O'</code>
+        - octal, <code>'H'</code>- hexadecimal, or <code>'D'</code> -
+        decimal.
+
+      </li>
+    </ul>
+
+    The second and subsequent parameters are the integers you want to print. You
+    can assume that the <code>printn</code> function will always be called so
+    that the number of integers matches the size of the string specified
+    with <code>fmt</code>.
+
+
+    <p>For example, let's use <code>printn</code> to print the number 10 in
+      octal, hexadecimal, and decimal.  The C function call would look
+      like: </p>
+
+    <table class="border"><tbody>
+        <tr>
+          <td>
+<pre>printn("OHD",10,10,10);</pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The output should then be: </p>
+
+    <table class="border"><tbody>
+        <tr>
+          <td style="padding-right:5em;">
+<pre>12
+A
+10</pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <p>In summary, the <code>main</code> program will be responsible for calling
+      your <code>printn</code> function.  Then your <code>printn</code> function
+      will need to call a proper print function from one
+      of <code>printOct</code>, <code>printHex</code>, or
+      <code>printDec</code> with the appropriate parameter, as shown in the
+      diagram below:</p>
+
+    <img src="./Lab 3_ Subroutines and C_files/lab3_codediagram.png" alt="Code diagram">
+
+	<a name="abi"></a>
+	<h2>More on the Nios II Application Binary Interface</h2>
+
+    <p>Since your assembly function will be called from C, and you will be
+      calling functions that are written in C, you will have to determine how
+      the registers and stack are used by the C compiler, and make your assembly
+      code consistent with it. These conventions form part of the <i>Application
+      Binary Interface</i> (ABI). Read the sections on "Register Usage" and
+      "Stacks" starting on page 2 of
+      the <a href="http://www.altera.com/literature/hb/nios2/n2cpu_nii51016.pdf">Nios
+      II Processor Reference Handbook</a>. Study the tables and diagrams
+      there. Pay particular attention to the section on stack frames for functions
+	  with variable arguments (Pages 5 through 6).</p>
+	
+	<!-- Should probably use a <div>, but we have no style defined for it, so I'll be lazy and use a <table> -->
+	<table class="border" style="width:auto; margin:1em;"><tbody><tr><td style="padding:1em;">
+	<h3>Stack Frames</h3>
+	
+	<p>When a function is called, space is allocated on the stack for use
+	by the function. The space is used for incoming parameters for the function,
+	saving callee-saved registers clobbered by the function (including <tt>ra</tt>),
+	local variables, and outgoing parameters for
+	nested function calls. All of this space that is used by one instance of a 
+	function is called a <b>stack frame</b>. Figure 3 of the Nios II ABI Reference
+	illustrates the contents of one stack frame.
+	According to this definition, adjacent stack frames share
+	the space for function parameters: Outgoing function parameters in one function
+	are incoming function parameters for a function it calls.</p>
+	
+	<p>Every time a function is called, a new stack frame is pushed on the stack (by the 
+	<a href="http://en.wikipedia.org/wiki/Function_prologue">function prologue</a>).
+	The stack frame is used by the function until it is popped off the stack just 
+	before the function returns (by the 
+	<a href="http://en.wikipedia.org/wiki/Function_prologue#Epilogue">function epilogue</a>).
+	A call stack consists of stack frames, one frame for each function call that
+	is in progress and has yet to return.</p>
+	
+	<p>A frame pointer (also called base pointer) is used to point to a fixed location near the top of each stack frame 
+	(In Nios II, <tt>fp</tt> points to the location where the previous <tt>fp</tt> is saved on the stack).
+	It is used to make it easier for debuggers to get a complete call stack trace, and for
+	dynamic allocation of variables on the stack. We won't be using this.
+	See <a href="http://en.wikipedia.org/wiki/Call_stack">Call Stack</a> on Wikipedia
+	for more details on call stacks.
+	</p>
+	</td></tr></tbody></table>
+	
+	  
+    <p>To help you understand the Nios II ABI, you can view the output of the
+      compiler in the disassembly window.  Even with an
+      empty <code>printn</code> function, you can disassemble the program and
+      view the compiler's output for the <tt>main</tt> function.  A sample output is shown below:</p>
+
+
+    <table class="border">
+      <tbody>
+        <tr><td><b>C Function</b></td><td><b>Generated Assembly</b></td></tr>
+        <tr>
+          <td>
+<pre>#define  TEXT   "DDOOHH"
+
+int main ( )
+{
+  char* text = TEXT;
+  printn ( text, 16,17,18,19,20,21 );
+  return 0;
+} </pre>
+          </td>
+
+          <td>
+<pre>main:
+addi    sp,sp,-16      # Allocate space on stack for 4 words
+stw     ra,12(sp)      # Save return address to stack
+
+movi    r2,19
+stw     r2,0(sp)       # 5th parameter on stack
+movi    r2,20
+stw     r2,4(sp)       # 6th parameter on stack
+movi    r2,21
+stw     r2,8(sp)       # 7th parameter on stack
+
+movhi   r4,0
+addi    r4,r4,1080     # r4 = address of char array (i.e., string)
+movi    r5,16
+movi    r6,17
+movi    r7,18          # 1st through 4th arguments in r4 through r7
+
+call    printn         # Call printn function
+
+mov     r2,zero        # main's return value (in r2) is 0
+ldw     ra,12(sp)      # Restore return address
+addi    sp,sp,16       # Deallocate stack space
+
+ret
+</pre>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Note that a string is really a char array, so using a string as the first function parameter
+	  results in the address of the string being passed in r4. Examine 
+	  how the arguments are pushed on the stack and in what order.</p>
+
+	  <p>Don't forget to declare the <code>printn</code> label as a global symbol
+      since it must be used by another file.</p>
+
+	<h2>Files</h2>
+	<ul>
+	<li>Part 1 and 2: <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/lab3_print.c">lab3_print.c</a>: Three print functions</li>
+	<li>Part 1: <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/lab3_part1_main.s">lab3_part1_main.s</a>: Skeleton code for Part 1</li>
+	<li>Part 2: <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/lab3_main.c">lab3_main.c</a>: Main function for part 2</li>
+	<li>Part 2: <a href="http://www-ug.eecg.toronto.edu/msl/nios_labs_SoC/3/lab3_printn.s">lab3_printn.s</a>: Skeleton code for Part 2</li>
+	</ul>
+	
+	  
+    <a name="preparation"></a>
+    <h2>Preparation (2 marks)</h2>
+
+    <ol>
+      <li>Study the sections "Register Usage" and "Stacks" on pages 2 through 7
+      of
+      the <a href="http://www.altera.com/literature/hb/nios2/n2cpu_nii51016.pdf">Nios
+      II Processor Reference Handbook</a>.  Answer the
+      following questions:
+        <ol>
+          <li> Which registers are callee-saved? </li>
+          <li> Which registers may change (i.e., clobbered) after calling (and executing and returning from) a function? </li>
+          <li> What is the sp (or r27) register used for?  </li>
+          <li> Does the stack pointer point to the first unused spot, or to the
+          last value pushed onto the stack? </li>
+          <li> What is the ra (or r31) register used for?  Who saves it? </li>
+          <li> Which register(s) are used to pass parameters (arguments) to a
+          function? </li>
+          <li> Which register(s) are used to return the results of a
+          function? </li>
+		  <li> Figure 3 of the ABI reference suggests copying r4 through r7 onto the stack in the prologue of functions with variable arguments.
+          Draw the contents of the child (callee) function's stack frame (including all incoming stack arguments) immediately after r4 through r7 are pushed onto the stack.
+          How can doing this simplify your algorithm?
+		  </li>
+        </ol>
+      </li>
+
+      <li>Assuming <code>printn</code> was called as follows:
+
+        <table class="border"><tbody>
+            <tr>
+              <td>
+      <pre>printn("OOOHHHDDD",8,9,10,11,12,13,14,15,16);</pre>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p></p>
+
+        Fill in the contents of the register and stack locations below as seen
+        by the first instruction in your <code>printn</code> function. Also indicate
+		where the current stack frame ends, beyond which you no longer know (nor care) what is on the stack.
+		Assume that the string <code>"OOOHHHDDD"</code> is stored at the memory
+        location <code>0x2000</code>.
+
+        <p></p>
+
+        <table class="border" width="20%">
+          <tbody>
+            <tr><td>r4</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>r5</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>r6</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>r7</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>ra</td><td width="80%">&nbsp;</td></tr>
+          </tbody>
+        </table>
+        <br>
+
+        <table class="border" width="20%">
+          <tbody>
+            <tr><td>0(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>4(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>8(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>12(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>16(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>20(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>24(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>28(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>32(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>36(sp)</td><td width="80%">&nbsp;</td></tr>
+            <tr><td>...(sp)</td><td width="80%">&nbsp;</td></tr>
+          </tbody>
+        </table>
+		<br>
+      </li>
+
+      <li>Write the assembly code for Part 1 and Part 2. In the Altera Monitor Program, create
+        your project using program type "C program". Add <tt>lab3_print.c</tt> to your project
+        for Part 1 and both <tt>lab3_print.c</tt> and <tt>lab3_main.c</tt> for Part 2.
+        Compile the code and fix any compilation errors.
+      </li>
+    </ol>
+
+    <a name="inlab"></a>
+    <h2>In Lab (2 marks)</h2>
+
+    <p> Demonstrate your working programs on the DE1-SoC Computer.  To run the program, load
+      it in the Monitor, and click Continue.  You can view the printed output in
+      the Terminal window of the Monitor Program.
+	Note: main() will also check if any registers were clobbered, indicated by a red LED being on. Make sure that at the end of main all red LEDs are off.
+</p>
+	<p>Package all of your source code for part 2 into code.zip (all .s and .c files), and <b>submit it on Blackboard.</b></p>
+
+    <a name="quiz"></a>
+    <h2>Quiz (1 mark)</h2>
+
+    <p> Be prepared to answer any questions about the lab and your code,
+      function calls, passing parameters, and usage of the stack. </p>
+
+  
+
+</body></html>
