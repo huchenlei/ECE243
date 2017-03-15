@@ -313,7 +313,7 @@ main:
 
 check_sensor_speed:
   call read_sensor_and_speed
-  mov r20, r2 # r20 = speed
+  mov r16, r2 # r16 = speed
   andi r17, r3, 0b11111 # r17 = sensors
 
   # switch different situations
@@ -332,7 +332,7 @@ check_sensor_speed:
 go_straight:
   movi r4, 0
   call change_steering
-  mov r4, r20
+  mov r4, r16
   movi r5, STRAIGHT_SPEED_MIN
   movi r6, STRAIGHT_SPEED_MAX
   call set_speed
@@ -340,7 +340,7 @@ go_straight:
 turn_left:
   movi r4, LEFT_STEER
   call change_steering
-  mov r4, r20
+  mov r4, r16
   movi r5, LEFT_SPEED_MIN
   movi r6, LEFT_SPEED_MAX
   call set_speed
@@ -348,7 +348,7 @@ turn_left:
 turn_sheer_left:
   movi r4, S_LEFT_STEER
   call change_steering
-  mov r4, r20
+  mov r4, r16
   movi r5, S_LEFT_SPEED_MIN
   movi r6, S_LEFT_SPEED_MAX
   call set_speed
@@ -356,7 +356,7 @@ turn_sheer_left:
 turn_right:
   movi r4, RIGHT_STEER
   call change_steering
-  mov r4, r20
+  mov r4, r16
   movi r5, RIGHT_SPEED_MIN
   movi r6, RIGHT_SPEED_MAX
   call set_speed
@@ -364,7 +364,7 @@ turn_right:
 turn_sheer_right:
   movi r4, S_RIGHT_STEER
   call change_steering
-  mov r4, r20
+  mov r4, r16
   movi r5, S_RIGHT_SPEED_MIN
   movi r6, S_RIGHT_SPEED_MAX
   call set_speed
