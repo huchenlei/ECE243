@@ -9,7 +9,9 @@
 main:
   movia r4, 10
   call printHex
+  movia r4, 10
   call printOct
+  movia r4, 10
   call printDec
 
   ret	# Make sure this returns to main's caller
