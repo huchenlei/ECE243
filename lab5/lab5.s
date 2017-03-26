@@ -2,14 +2,12 @@
   This program controls the car on screen
   */
 
-  #.include "nios_macros.s"
-
   .equ UART_CAR, 0x10001020
   .equ TIMER, 0x10002000
-  .equ LEFT_STEER, -64
-  .equ RIGHT_STEER, 64
-  .equ S_LEFT_STEER, -127
-  .equ S_RIGHT_STEER, 128
+  .equ LEFT_STEER, 64
+  .equ RIGHT_STEER, -64
+  .equ S_LEFT_STEER, 127
+  .equ S_RIGHT_STEER, -127
   .equ STRAIGHT_SPEED_MAX, 48
   .equ STRAIGHT_SPEED_MIN, 47
   .equ LEFT_SPEED_MAX, 40
@@ -147,40 +145,40 @@ go_straight:
   movi r4, 0
   call change_steering
   mov r4, r16
-  movi r5, STRAIGHT_SPEED_MAX
-  movi r6, STRAIGHT_SPEED_MIN
+  movi r5, STRAIGHT_SPEED_MIN
+  movi r6, STRAIGHT_SPEED_MAX
   call set_speed
   br check_sensor_speed
 turn_left:
   movi r4, LEFT_STEER
   call change_steering
   mov r4, r16
-  movi r5, LEFT_SPEED_MAX
-  movi r6, LEFT_SPEED_MIN
+  movi r5, LEFT_SPEED_MIN
+  movi r6, LEFT_SPEED_MAX
   call set_speed
   br check_sensor_speed
 turn_sheer_left:
   movi r4, S_LEFT_STEER
   call change_steering
   mov r4, r16
-  movi r5, S_LEFT_SPEED_MAX
-  movi r6, S_LEFT_SPEED_MIN
+  movi r5, S_LEFT_SPEED_MIN
+  movi r6, S_LEFT_SPEED_MAX
   call set_speed
   br check_sensor_speed
 turn_right:
   movi r4, RIGHT_STEER
   call change_steering
   mov r4, r16
-  movi r5, RIGHT_SPEED_MAX
-  movi r6, RIGHT_SPEED_MIN
+  movi r5, RIGHT_SPEED_MIN
+  movi r6, RIGHT_SPEED_MAX
   call set_speed
   br check_sensor_speed
 turn_sheer_right:
   movi r4, S_RIGHT_STEER
   call change_steering
   mov r4, r16
-  movi r5, S_RIGHT_SPEED_MAX
-  movi r6, S_RIGHT_SPEED_MIN
+  movi r5, S_RIGHT_SPEED_MIN
+  movi r6, S_RIGHT_SPEED_MAX
   call set_speed
   br check_sensor_speed
 
@@ -196,12 +194,12 @@ set_speed:
   ble r4, r5, faster
 
 slower:
-  movi r4, 127
+  movi r4, -127
   call change_a
   br return
 
 faster:
-  movi r4, -127
+  movi r4, 127
   call change_a
   br return
 

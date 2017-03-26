@@ -3,3 +3,13 @@
 
 # ignore class notes
 *.org
+
+# ignore compilation files generated Altera Monitor Program
+*.elf
+*.s.o
+*.srec
+*.amp
+
+# ignore submit files
+code
+code.zip

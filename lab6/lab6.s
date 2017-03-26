@@ -1,7 +1,6 @@
 /*
     This program controls the car on screen
     */
-  .text
   .equ UART_TERM, 0xFF201000
   .equ UART_CAR, 0x10001020
   .equ TIMER, 0xFF202000
@@ -27,15 +26,7 @@
   #.equ INITIAL_STACK, 2000
   .equ INITIAL_STACK, 0x00400000
 
-  .section .data
-display_option: # 1 for sensor / 0 for speed
-  .word 0
-sensor:
-  .word 0
-speed:
-  .word 0
 
-  .align 2
 
   .section .exceptions, "ax"
 ihandler:
@@ -156,7 +147,16 @@ exit_ihandler:
 
   .global _start
   .global main
+  .section .data
+display_option: # 1 for sensor / 0 for speed
+  .word 0
+sensor:
+  .word 0
+speed:
+  .word 0
 
+  .align 2
+  .section .text
   /* write a byte to URAT TERM r4 = byte char */
 write_term:
   # wait until ready to write
