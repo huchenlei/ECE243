@@ -1,0 +1,73 @@
+MIF/HEX Update report for multicycle
+Wed Mar 29 16:09:17 2017
+Quartus Prime Version 16.0.0 Build 211 04/27/2016 SJ Standard Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. MIF/HEX Update Summary
+  3. MIF/HEX Update Processed Files
+  4. MIF/HEX Update Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2016 Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus Prime License Agreement,
+the Altera MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Altera and sold by Altera or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+
+
+
++---------------------------------------------------------------+
+; MIF/HEX Update Summary                                        ;
++-----------------------+---------------------------------------+
+; MIF/HEX Update Status ; Successful - Wed Mar 29 16:09:17 2017 ;
+; Revision Name         ; multicycle                            ;
+; Top-level Entity Name ; multicycle                            ;
+; Family                ; Cyclone V                             ;
+; Device                ; 5CSEMA5F31C6                          ;
++-----------------------+---------------------------------------+
+
+
++---------------------------------------------------------------------------+
+; MIF/HEX Update Processed Files                                            ;
++---------------------------------------------------------------------------+
+; File Name                                                                 ;
++---------------------------------------------------------------------------+
+; //SRVD/Homes$/huchenle/Desktop/ECE243/lab7/multicycle/multicycle/data.mif ;
++---------------------------------------------------------------------------+
+
+
++-------------------------+
+; MIF/HEX Update Messages ;
++-------------------------+
+Info: *******************************************************************
+Info: Running Quartus Prime MIF/HEX Update
+    Info: Version 16.0.0 Build 211 04/27/2016 SJ Standard Edition
+    Info: Processing started: Wed Mar 29 16:09:14 2017
+Info: Command: quartus_cdb multicycle -c multicycle --update_mif
+Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
+Info (39024): Processed the following Memory Initialization File(s)
+    Info (39025): Processed Memory Initialization File //SRVD/Homes$/huchenle/Desktop/ECE243/lab7/multicycle/multicycle/data.mif File: //SRVD/Homes$/huchenle/Desktop/ECE243/lab7/multicycle/multicycle/data.mif Line: 0
+Info: Quartus Prime MIF/HEX Update was successful. 0 errors, 1 warning
+    Info: Peak virtual memory: 944 megabytes
+    Info: Processing ended: Wed Mar 29 16:09:17 2017
+    Info: Elapsed time: 00:00:03
+    Info: Total CPU time (on all processors): 00:00:02
+
+
