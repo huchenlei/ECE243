@@ -72,7 +72,7 @@ module FSM
                   else if( instr == 4'b0101 ) state = c3_bz;
                   else if( instr == 4'b1001 ) state = c3_bnz;
                   // [New] new instrs
-                  else if (instr == 4'b1110) state = c3_jr;
+                  else if (instr == 4'b1110)  state = c3_jr;
                   else if (instr == 4'b1100) state = c3_jal;
                   else if (instr == 4'b0001) state = c3_ldind;
                   else state = 0;

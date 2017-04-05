@@ -13,3 +13,6 @@
 # ignore submit files
 code
 code.zip
+
+lab7/multicycle/multicycle/db
+lab7/multicycle/multicycle/incremental_db

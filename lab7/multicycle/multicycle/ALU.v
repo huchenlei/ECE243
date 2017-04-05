@@ -54,7 +54,7 @@ begin
   end
   // [NEW] Add new case for ALU
   else if (ALUOp == 5) begin
-     temp_out = in1;
+     tmp_out = in1;
   end
   else begin
      tmp_out = 0;
