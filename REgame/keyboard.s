@@ -384,6 +384,7 @@ get_input_string:
   ret
 
   /* [MAIN] void refresh_input_buffer()
+  @Deprecated
   refresh the input buffer (set input length to 0) */
 refresh_input_buffer:
   movia r4, user_input_length
