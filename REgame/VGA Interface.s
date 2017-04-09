@@ -33,6 +33,8 @@
 # - Users are encounraged to use expected inputs even though currently are advanced features are not supported
 #################################################################
 
+.include "keyboard.s"
+
 .section .data
 ########################### Application Data ###########################
 ApplicationGlobalVariables:
@@ -79,6 +81,8 @@ _start:	# Test Function
   # Assign stack
     # movia sp, 0x00004000
     movia sp, 0x00400000
+	# initialize keyboard
+	call initialize_keyboard
 
   # Initialize graphics
     # Get packed word for default background color (Black)
@@ -107,7 +111,7 @@ _start:	# Test Function
     call SetDrawColor
 
     # Clear screen
-    call ClearScreen
+    Loop: call ClearScreen
 
     # Draw one frame of contents
     /*# Draw a line
@@ -117,9 +121,10 @@ _start:	# Test Function
     movi r7, -15
     call SetDrawColor*/
     # Draw some string
+	call get_input_string
     movi r4, 3
     movi r5, 11
-    movia r6, WelcomeText
+    mov r6, r2
     call DrawText
     # Draw some more string
     movi r4, 3
@@ -155,7 +160,7 @@ _start:	# Test Function
     # call SwapBuffers # Not enabled, currently default immediate mode
 
     # Infinite loop
-    Loop: br Loop
+    br Loop
 
 ########################### VGA Interface ###########################
   ##################### Graphics Management #####################

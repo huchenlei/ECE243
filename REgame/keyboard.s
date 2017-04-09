@@ -11,209 +11,7 @@
 
   /****************** interrupt section **********************/
   .section .exceptions, "ax" # ax
-ihandler:
-  #prologue
-  subi sp, sp, 28
-  stw r8, 0(sp)
-  stw r9, 4(sp)
-  stw r10, 8(sp)
-  stw r11, 12(sp)
-  stw r12, 16(sp)
-  stw r13, 20(sp)
-  stw ra, 24(sp)
-
-  rdctl et, ctl4 # read ipending
-  andi et, et, 0x0080 # check IRQ line 7 (KEYBOARD)
-  bne et, r0, keyboard_handler
-
-  rdctl et, ctl4
-  andhi et, et, 0x0080 # check IRQ line 23 (MOUSE)
-  bne et, r0, mouse_handler
-
-  br exit_ihandler
-
-exit_ihandler:
-  #epilogue
-  ldw r8, 0(sp)
-  ldw r9, 4(sp)
-  ldw r10, 8(sp)
-  ldw r11, 12(sp)
-  ldw r12, 16(sp)
-  ldw r13, 20(sp)
-  ldw ra, 24(sp)
-
-  addi sp, sp, 28
-
-  # re-execute the command on interrupt
-  addi ea, ea, -4
-  eret
-
-  /* [ihandler] read input from keyboard
-      whenever is called, clear the FIFO queue and process all data in queue
-
-while (!FIFO.empty()) {
-  char byte = read_next_byte()
-  if (byte == 0xf0) {
-    char b = read_next_byte()
-    if(b.is_valid()) {
-      if (b == 0x12) shift_on_flag = false // disable shift
-      continue
-    } else {
-      is_f0_flag = true
-      break
-    }
-  } else if (byte == 0x12) { // shift
-    if(is_f0_flag) {
-      shift_on_flag = false
-      is_f0_flag = false
-    }
-    shift_on_flag = true
-  } else {
-    if(is_f0_flag) {
-      is_f0_flag = false
-      continue
-    } else {
-      save_char_to_buffer
-    }
-  }
-}
-keyboard_process_raw_input();
-  */
-keyboard_handler:
-  movia et, KEYBOARD
-  movia r10, keyboard_buffer
-read_next_byte_raw_input:
-  ldwio r8, 0(et)
-  andi r9, r8, 0x8000 # check read valid byte
-  beq r9, r0, keyboard_process_raw_input # break if valid byte is not 1
-
-  andi r9, r8, 0x00FF # read data itself
-
-  # the interrupt is caused by key release
-  # read the byte after since the two consist as one key event
-  # and continue cycle
-  movi et, 0x00f0
-  beq r9, et, handle_f0
-  movi et, 0x0012
-  beq r9, et, handle_shift
-  br handle_other_char
-
-handle_f0:
-  # the interrupt is f0
-  # read next byte
-  ldwio r8, 0(et)
-  andi r9, r8, 0x8000 # check read valid byte
-  bne r9, r0, next_byte_valid
-  br next_byte_invalid
-next_byte_valid:
-  # valid -> read next byte (the byte after f0 is already read and discard)
-  # and consider whether is shift
-  andi r9, r8, 0x00FF
-  movi r8, 0x0012
-  bne r9, r8, read_next_byte_raw_input
-  # is shift, turn off shift flag
-  movia r8, shift_on_flag
-  movi r9, 0
-  stb r9, 0(r8)
-  br read_next_byte_raw_input
-next_byte_invalid:
-  # invalid -> the end of raw input set flag to 1 and process existing raw_input
-  movia et, is_f0_flag
-  movi r8, 1
-  stb r8, 0(et)
-  br keyboard_process_raw_input
-
-handle_shift:
-  # the interrupt is shift
-  # check the is_f0_flag
-  movia et, is_f0_flag
-  ldb r8, 0(et)
-  bne r8, r0, shift_previous_is_f0
-  br shift_previous_not_f0
-shift_previous_is_f0:
-  # previous char is f0 -> shift off & is_f0_flag false
-  movia et, shift_on_flag
-  movi r8, 0
-  stb r8, 0(et)
-  movia et, is_f0_flag
-  stb r8, 0(et)
-  br read_next_byte_raw_input
-shift_previous_not_f0:
-  # previous char is not f0 -> shift on
-  movia et, shift_on_flag
-  movi r8, 1
-  stb r8, 0(et)
-  br read_next_byte_raw_input
-
-handle_other_char:
-  # the data is valid
-  # check the is_f0_flag
-  movia et, is_f0_flag
-  ldb r8, 0(et)
-  bne r8, r0, previous_is_f0
-  br previous_not_f0
-previous_is_f0:
-  # previous char is f0 -> discard this byte and read next & set is_f0_flag to 0
-  movi r8, 0
-  stb r8, 0(et)
-  br read_next_byte_raw_input
-previous_not_f0:
-  # previous char is not f0 -> save to keyboard_buffer
-  stb r9, 0(r10) # save data to keyboard_buffer
-  addi r10, r10, 1 # increment r10
-  br read_next_byte_raw_input
-
-keyboard_process_raw_input:
-  # this part analysis the key strokes saved in keyboard_buffer
-  # r10 is end pointer previously set
-  movia et, user_input_length
-  ldw r11, 0(et) # r11 is current length of the string
-  movia et, user_input
-  add r12, et, r11 # r12 is the current char pointer of user_input string
-
-  movia et, keyboard_buffer
-
-  # outer loop. loop through current raw input buffer
-convert_next_raw_input:
-  beq et, r10, exit_keyboard_handler # break if reach the end of string
-  ldb r8, 0(et) # read the make code char
-  movia r9, shift_on_flag
-  ldb r13, 0(r9)
-  beq r13, r0, use_regular_table
-  br use_shift_table
-use_regular_table:
-  movia r13, make_to_ascii_table
-  br make_to_ascii_lookup_loop
-use_shift_table:
-  movia r13, make_to_ascii_table_shift
-  br make_to_ascii_lookup_loop
-
-  # inner loop. loop through make_to_ascii_table
-make_to_ascii_lookup_loop:
-  ldb r9, 0(r13) # read the loop up code and save in r9
-  beq r8, r9, save_ascii_to_user_input
-  addi r13, r13, 2 # increment table address
-  br make_to_ascii_lookup_loop
-save_ascii_to_user_input:
-  ldb r9, 1(r13) # r9 is cooresponse ascii code
-  stb r9, 0(r12) # append r9 to user_input string
-  addi r11, r11, 1 # increment string length counter
-  addi r12, r12, 1 # increment user_input pointer
-
-  addi et, et, 1 # increment raw_input pointer
-  br convert_next_raw_input
-
-exit_keyboard_handler:
-  # save the new string length
-  movia et, user_input_length
-  stw r11, 0(et)
-  br exit_ihandler
-
-  /* [ihandler] read input from mouse */
-mouse_handler:
-  /* TODO */
-  br exit_ihandler
-
+  br ihandler
 
   /********************* data section *******************/
   .data
@@ -334,9 +132,12 @@ make_to_ascii_table_shift:
 
   /******************** text section ********************/
   .text
-  .global _start
-_start:
-  movia sp, INITIAL_STACK
+  #.global _start
+initialize_keyboard:
+  # movia sp, INITIAL_STACK
+  subi sp, sp, 4
+  stw ra, 0(sp)
+
   /* enable keyboard & mouse interrupt TODO timer interrupt*/
   call set_up_keyboard
   call set_up_mouse
@@ -351,6 +152,10 @@ _start:
 
   movi r5, 0x0001
   wrctl ctl0, r5 # set PIE bit to 1
+
+  ldw ra, 0(sp)
+  addi sp, sp, 4
+  ret
 
 wait_loop:
   br wait_loop #infinite loop to hold the program
@@ -378,6 +183,7 @@ get_input_string:
   movia r2, user_input
   movia r3, user_input_length
   add r5, r2, r3
+  addi r5, r5, 1
   movi r6, 0
   stb r6, 0(r5)
   ret
@@ -390,3 +196,208 @@ refresh_input_buffer:
   movi r5, 0x0000
   stw r5, 0(r4)
   ret
+
+  /* interrupt handling routines */
+  ihandler:
+  #prologue
+  subi sp, sp, 28
+  stw r8, 0(sp)
+  stw r9, 4(sp)
+  stw r10, 8(sp)
+  stw r11, 12(sp)
+  stw r12, 16(sp)
+  stw r13, 20(sp)
+  stw ra, 24(sp)
+
+  rdctl et, ctl4 # read ipending
+  andi et, et, 0x0080 # check IRQ line 7 (KEYBOARD)
+  bne et, r0, keyboard_handler
+
+  rdctl et, ctl4
+  andhi et, et, 0x0080 # check IRQ line 23 (MOUSE)
+  bne et, r0, mouse_handler
+
+  br exit_ihandler
+
+exit_ihandler:
+  #epilogue
+  ldw r8, 0(sp)
+  ldw r9, 4(sp)
+  ldw r10, 8(sp)
+  ldw r11, 12(sp)
+  ldw r12, 16(sp)
+  ldw r13, 20(sp)
+  ldw ra, 24(sp)
+
+  addi sp, sp, 28
+
+  # re-execute the command on interrupt
+  addi ea, ea, -4
+  eret
+
+  /* [ihandler] read input from keyboard
+      whenever is called, clear the FIFO queue and process all data in queue
+
+while (!FIFO.empty()) {
+  char byte = read_next_byte()
+  if (byte == 0xf0) {
+    char b = read_next_byte()
+    if(b.is_valid()) {
+      if (b == 0x12) shift_on_flag = false // disable shift
+      continue
+    } else {
+      is_f0_flag = true
+      break
+    }
+  } else if (byte == 0x12) { // shift
+    if(is_f0_flag) {
+      shift_on_flag = false
+      is_f0_flag = false
+    }
+    shift_on_flag = true
+  } else {
+    if(is_f0_flag) {
+      is_f0_flag = false
+      continue
+    } else {
+      save_char_to_buffer
+    }
+  }
+}
+keyboard_process_raw_input();
+  */
+keyboard_handler:
+  movia et, KEYBOARD
+  movia r10, keyboard_buffer
+read_next_byte_raw_input:
+  ldwio r8, 0(et)
+  andi r9, r8, 0x8000 # check read valid byte
+  beq r9, r0, keyboard_process_raw_input # break if valid byte is not 1
+
+  andi r9, r8, 0x00FF # read data itself
+
+  # the interrupt is caused by key release
+  # read the byte after since the two consist as one key event
+  # and continue cycle
+  movi et, 0x00f0
+  beq r9, et, handle_f0
+  movi et, 0x0012
+  beq r9, et, handle_shift
+  br handle_other_char
+
+handle_f0:
+  # the interrupt is f0
+  # read next byte
+  movia et, KEYBOARD
+  ldwio r8, 0(et)
+  andi r9, r8, 0x8000 # check read valid byte
+  bne r9, r0, next_byte_valid
+  br next_byte_invalid
+next_byte_valid:
+  # valid -> read next byte (the byte after f0 is already read and discard)
+  # and consider whether is shift
+  andi r9, r8, 0x00FF
+  movi r8, 0x0012
+  bne r9, r8, read_next_byte_raw_input
+  # is shift, turn off shift flag
+  movia r8, shift_on_flag
+  movi r9, 0
+  stb r9, 0(r8)
+  br read_next_byte_raw_input
+next_byte_invalid:
+  # invalid -> the end of raw input set flag to 1 and process existing raw_input
+  movia et, is_f0_flag
+  movi r8, 1
+  stb r8, 0(et)
+  br keyboard_process_raw_input
+
+handle_shift:
+  # the interrupt is shift
+  # check the is_f0_flag
+  movia et, is_f0_flag
+  ldb r8, 0(et)
+  bne r8, r0, shift_previous_is_f0
+  br shift_previous_not_f0
+shift_previous_is_f0:
+  # previous char is f0 -> shift off & is_f0_flag false
+  movia et, shift_on_flag
+  movi r8, 0
+  stb r8, 0(et)
+  movia et, is_f0_flag
+  stb r8, 0(et)
+  br read_next_byte_raw_input
+shift_previous_not_f0:
+  # previous char is not f0 -> shift on
+  movia et, shift_on_flag
+  movi r8, 1
+  stb r8, 0(et)
+  br read_next_byte_raw_input
+
+handle_other_char:
+  # the data is valid
+  # check the is_f0_flag
+  movia et, is_f0_flag
+  ldb r8, 0(et)
+  bne r8, r0, previous_is_f0
+  br previous_not_f0
+previous_is_f0:
+  # previous char is f0 -> discard this byte and read next & set is_f0_flag to 0
+  movi r8, 0
+  stb r8, 0(et)
+  br read_next_byte_raw_input
+previous_not_f0:
+  # previous char is not f0 -> save to keyboard_buffer
+  stb r9, 0(r10) # save data to keyboard_buffer
+  addi r10, r10, 1 # increment r10
+  br read_next_byte_raw_input
+
+keyboard_process_raw_input:
+  # this part analysis the key strokes saved in keyboard_buffer
+  # r10 is end pointer previously set
+  movia et, user_input_length
+  ldw r11, 0(et) # r11 is current length of the string
+  movia et, user_input
+  add r12, et, r11 # r12 is the current char pointer of user_input string
+
+  movia et, keyboard_buffer
+
+  # outer loop. loop through current raw input buffer
+convert_next_raw_input:
+  beq et, r10, exit_keyboard_handler # break if reach the end of string
+  ldb r8, 0(et) # read the make code char
+  movia r9, shift_on_flag
+  ldb r13, 0(r9)
+  beq r13, r0, use_regular_table
+  br use_shift_table
+use_regular_table:
+  movia r13, make_to_ascii_table
+  br make_to_ascii_lookup_loop
+use_shift_table:
+  movia r13, make_to_ascii_table_shift
+  br make_to_ascii_lookup_loop
+
+  # inner loop. loop through make_to_ascii_table
+make_to_ascii_lookup_loop:
+  ldb r9, 0(r13) # read the loop up code and save in r9
+  beq r8, r9, save_ascii_to_user_input
+  addi r13, r13, 2 # increment table address
+  br make_to_ascii_lookup_loop
+save_ascii_to_user_input:
+  ldb r9, 1(r13) # r9 is cooresponse ascii code
+  stb r9, 0(r12) # append r9 to user_input string
+  addi r11, r11, 1 # increment string length counter
+  addi r12, r12, 1 # increment user_input pointer
+
+  addi et, et, 1 # increment raw_input pointer
+  br convert_next_raw_input
+
+exit_keyboard_handler:
+  # save the new string length
+  movia et, user_input_length
+  stw r11, 0(et)
+  br exit_ihandler
+
+  /* [ihandler] read input from mouse */
+mouse_handler:
+  /* TODO */
+  br exit_ihandler
