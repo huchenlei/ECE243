@@ -11,7 +11,6 @@
 
   /****************** interrupt section **********************/
   .section .exceptions, "ax" # ax
-
 ihandler:
   #prologue
   subi sp, sp, 28
