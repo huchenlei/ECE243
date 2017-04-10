@@ -7,6 +7,9 @@
 #define MAX_LEVEL_OF_GROUPS 10 // MAX support 10 level of groups
 #define MAX_PARALLEL_OF_GROUPS 10
 
+/* function prototype for entrance of an assembly function */
+void initialize_all();
+
 typedef struct re_node {
     char char_match;  // the char this unit matches
 
@@ -50,9 +53,10 @@ int re_match(char *re, char *text) {
 }
 
 int main(int argc, char const *argv[]) {
-    re_node *root = construct_tree("(abc)|(def(g)|(h))z");
-    print_tree(root, 0);
-    printf("match result: %d", re_match("(abc)|(def(g)|(h))z", "defgz"));
+    /* re_node *root = construct_tree("(abc)|(def(g)|(h))z"); */
+    /* print_tree(root, 0); */
+    /* printf("match result: %d", re_match("(abc)|(def(g)|(h))z", "defgz")); */
+    initialize_all();
     return 0;
 }
 

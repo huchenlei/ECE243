@@ -207,7 +207,7 @@ refresh_input_buffer:
   /* interrupt handling routines */
   ihandler:
   #prologue
-  subi sp, sp, 28
+  subi sp, sp, 56
   stw r8, 0(sp)
   stw r9, 4(sp)
   stw r10, 8(sp)
@@ -215,6 +215,17 @@ refresh_input_buffer:
   stw r12, 16(sp)
   stw r13, 20(sp)
   stw ra, 24(sp)
+
+  # calling other functions in ihandler
+  # save everything that might be changed: caller save regs and r2 ~ r7
+  stw r2, 28(sp)
+  stw r3, 32(sp)
+  stw r4, 36(sp)
+  stw r5, 40(sp)
+  stw r6, 44(sp)
+  stw r7, 48(sp)
+  stw r14, 52(sp)
+  stw r15, 56(sp)
 
   rdctl et, ctl4 # read ipending
   andi et, et, 0x0080 # check IRQ line 7 (KEYBOARD)
@@ -227,6 +238,9 @@ refresh_input_buffer:
   br exit_ihandler
 
 exit_ihandler:
+  # refresh screen in VGA module
+  call update_screen
+
   #epilogue
   ldw r8, 0(sp)
   ldw r9, 4(sp)
@@ -236,7 +250,16 @@ exit_ihandler:
   ldw r13, 20(sp)
   ldw ra, 24(sp)
 
-  addi sp, sp, 28
+  ldw r2, 28(sp)
+  ldw r3, 32(sp)
+  ldw r4, 36(sp)
+  ldw r5, 40(sp)
+  ldw r6, 44(sp)
+  ldw r7, 48(sp)
+  ldw r14, 52(sp)
+  ldw r15, 56(sp)
+
+  addi sp, sp, 56
 
   # re-execute the command on interrupt
   addi ea, ea, -4
