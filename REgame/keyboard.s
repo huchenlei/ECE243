@@ -22,7 +22,9 @@ is_f0_flag:
 shift_on_flag:
   /* 1: shift is on; 0: shift is off */
   .byte 0
-  .skip 2
+need_refresh_flag:
+  .byte 0
+  .skip 1
 
 keyboard_buffer:
   /* the buffer accepting keyboard strokes; The PS2 queue has only 256 bytes */
@@ -86,7 +88,10 @@ make_to_ascii_table:
 
   # space
   .byte 0x29, 32
-
+  
+  # \
+  .byte 0x5d, 92
+  
   .align 2
 
 make_to_ascii_table_shift:
@@ -134,6 +139,8 @@ make_to_ascii_table_shift:
   # space
   .byte 0x29, 32
 
+  # |
+  .byte 0x5d, 124
     .align 2
 
   /******************** text section ********************/
@@ -183,6 +190,16 @@ set_up_mouse:
   stwio r5, 4(r4)
   ret
 
+  /* [MAIN] bool get_input_status() */
+get_input_status:
+  movia r4, need_refresh_flag
+  ldb r2, 0(r4)
+  bne r2, r0, refresh_input_status:
+  ret
+refresh_input_status:
+  stb r0, 0(r4)
+  ret
+  
   /* [MAIN] char* get_input_string()
   returns a char pointer to current input string */
 get_input_string:
@@ -190,7 +207,6 @@ get_input_string:
   movia r2, user_input
   movia r3, user_input_length
   add r5, r2, r3
-  addi r5, r5, 1
   movi r6, 0
   stb r6, 0(r5)
   ret
@@ -238,9 +254,11 @@ refresh_input_buffer:
   br exit_ihandler
 
 exit_ihandler:
-  # refresh screen in VGA module
-  call update_screen
-
+  # set need_refresh_flag to 1 
+  movia et, need_refresh_flag
+  movi r11, 1
+  stb r11, 0(et)
+  
   #epilogue
   ldw r8, 0(sp)
   ldw r9, 4(sp)
@@ -304,7 +322,9 @@ keyboard_process_raw_input();
 keyboard_handler:
   movia et, KEYBOARD
   movia r10, keyboard_buffer
+
 read_next_byte_raw_input:
+  movia et, KEYBOARD
   ldwio r8, 0(et)
   andi r9, r8, 0x8000 # check read valid byte
   beq r9, r0, keyboard_process_raw_input # break if valid byte is not 1
@@ -454,6 +474,8 @@ exit_keyboard_handler:
   # save the new string length
   movia et, user_input_length
   stw r11, 0(et)
+
+  
   br exit_ihandler
 
   /* [ihandler] read input from mouse */

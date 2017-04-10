@@ -33,6 +33,7 @@
 # - Users are encounraged to use expected inputs even though currently are advanced features are not supported
 #################################################################
 
+.include "keyboard.s"
 .section .data
 ########################### Application Data ###########################
 ApplicationGlobalVariables:
@@ -85,29 +86,42 @@ GlobalVariables:
 
 .align 2
 .section .text
-.global _start
+#.global _start
+.global initialize_all
 ########################### Application Program ###########################
-_start:	# Test Function
+#_start:	# Test Function
+initialize_all:
+  subi sp, sp, 4
+  stw ra, 0(sp)
+  
   # Assign stack
   # movia sp, 0x00004000
-  movia sp, 0x00400000
+  # movia sp, 0x00400000
 
   # Run application
   call REGameGraphicsSetup
   # Set up other stuff
-  # call KeyboardInitialize
+  call initialize_keyboard
 
   movi r4, 0
   call render_result
 
   # Infinite loop: refresh screen display per request by calling REGameRefresh()
-  Loop: br Loop
-
+  Loop: 
+  # keep checking status of keyboard buffer
+  call get_input_status
+  beq r0, r2, Loop
+  call update_screen
+  br Loop
+  
+  ldw ra, 0(sp)
+  addi sp, sp, 4
+  
   /* render the matching result
 @register r4: bool result
   */
 render_result:
-  subi sp, sp, -4
+  subi sp, sp, 4
   stw ra, 0(sp)
 
   mov r5, r4
@@ -186,17 +200,17 @@ update_screen:
   # match item 1 ~ 3 (result should all be successful)
   movi r17, 1 # match result initially 1
   # match item 1
-  mov r4, TestItem1
+  movia r4, TestItem1
   mov r5, r16
   call re_match
   and r17, r17, r2
   # match item 2
-  mov r4, TestItem2
+  movia r4, TestItem2
   mov r5, r16
   call re_match
   and r17, r17, r2
   # match item 3
-  mov r4, TestItem3
+  movia r4, TestItem3
   mov r5, r16
   call re_match
   and r17, r17, r2
@@ -205,17 +219,17 @@ update_screen:
   # match item 4 ~ 6 (result should all be failed)
   movi r17, 0 # match result initially 0
   # match item 4
-  mov r4, TestItem4
+  movia r4, TestItem4
   mov r5, r16
   call re_match
   or r17, r17, r2
   # match item 5
-  mov r4, TestItem5
+  movia r4, TestItem5
   mov r5, r16
   call re_match
   or r17, r17, r2
   # match item 6
-  mov r4, TestItem6
+  movia r4, TestItem6
   mov r5, r16
   call re_match
   or r17, r17, r2
@@ -1022,6 +1036,7 @@ ClearHistoryStringBuffer:
         stb r3, 0(r8)
         addi r2, r2, -1
         addi r8, r8, 1
+		br ClearHistoryStringBuffer_Loop
     ClearHistoryStringBuffer_End:
 
     # Pop stack
@@ -1049,6 +1064,7 @@ ClearCommandStringBuffer:
         stb r3, 0(r8)
         addi r2, r2, -1
         addi r8, r8, 1
+		br ClearCommandStringBuffer_Loop
     ClearCommandStringBuffer_End:
 
     # Append a prompt symbol
