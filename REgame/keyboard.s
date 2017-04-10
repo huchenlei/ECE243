@@ -4,8 +4,8 @@
 
   */
 
-  # .equ INITIAL_STACK, 0x00020000
-  .equ INITIAL_STACK, 0x00400000
+  .equ INITIAL_STACK, 0x00020000
+  #equ INITIAL_STACK, 0x00400000
   .equ KEYBOARD, 0xFF200100
   .equ MOUSE, 0xFF200108
 
@@ -84,6 +84,9 @@ make_to_ascii_table:
   .byte 0x3E, 56
   .byte 0x46, 57
 
+  # space
+  .byte 0x29, 32
+
   .align 2
 
 make_to_ascii_table_shift:
@@ -128,13 +131,17 @@ make_to_ascii_table_shift:
   .byte 0x3E, 42
   .byte 0x46, 40
 
+  # space
+  .byte 0x29, 32
+
     .align 2
 
   /******************** text section ********************/
   .text
   #.global _start
 initialize_keyboard:
-  # movia sp, INITIAL_STACK
+#_start:
+  #movia sp, INITIAL_STACK
   subi sp, sp, 4
   stw ra, 0(sp)
 
@@ -255,6 +262,11 @@ while (!FIFO.empty()) {
       is_f0_flag = false
     }
     shift_on_flag = true
+  } else if (byte == 0x66) {
+    if (!is_f0_flag)
+      input_length--
+    else
+        is_f0_flag = false;
   } else {
     if(is_f0_flag) {
       is_f0_flag = false
@@ -283,8 +295,11 @@ read_next_byte_raw_input:
   beq r9, et, handle_f0
   movi et, 0x0012
   beq r9, et, handle_shift
+  movi et, 0x0066
+  beq r9, et, handle_delete
   br handle_other_char
 
+  /* handle f0 */
 handle_f0:
   # the interrupt is f0
   # read next byte
@@ -311,6 +326,7 @@ next_byte_invalid:
   stb r8, 0(et)
   br keyboard_process_raw_input
 
+  /* handle shift */
 handle_shift:
   # the interrupt is shift
   # check the is_f0_flag
@@ -333,6 +349,26 @@ shift_previous_not_f0:
   stb r8, 0(et)
   br read_next_byte_raw_input
 
+/* handle delete */
+handle_delete:
+  movia et, is_f0_flag
+  ldb r8, 0(et)
+  movi r9, 1
+  beq r8, r9, delete_previous_is_f0 # ignore break code del
+  br delete_previous_not_f0
+delete_previous_is_f0:
+  movia et, is_f0_flag
+  movi r8, 0
+  stb r8, 0(et)
+  br exit_ihandler
+delete_previous_not_f0:
+  movia et, user_input_length
+  ldw r8, 0(et)
+  subi r8, r8, 1
+  stw r8, 0(et)
+  br exit_ihandler
+
+/* handle other chars */
 handle_other_char:
   # the data is valid
   # check the is_f0_flag
