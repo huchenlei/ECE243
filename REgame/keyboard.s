@@ -213,6 +213,7 @@ get_input_string:
   # add 0 to the end of buffer string
   movia r2, user_input
   movia r3, user_input_length
+  ldw r3, 0(r3)
   add r5, r2, r3
   movi r6, 0
   stb r6, 0(r5)
@@ -250,7 +251,6 @@ refresh_input_buffer:
   stw r14, 52(sp)
   stw r15, 56(sp)
   
-  
   rdctl et, ctl4 # read ipending
   andi et, et, 0x0080 # check IRQ line 7 (KEYBOARD)
   bne et, r0, keyboard_handler
@@ -262,11 +262,13 @@ refresh_input_buffer:
   br exit_ihandler
 
 exit_ihandler:
+  beq r0, r14, exit_ihandler_epilogue
   # set need_refresh_flag to 1 
   movia et, need_refresh_flag
   movi r11, 1
   stb r11, 0(et)
   
+exit_ihandler_epilogue:
   #epilogue
   ldw r8, 0(sp)
   ldw r9, 4(sp)
@@ -328,6 +330,7 @@ while (!FIFO.empty()) {
 keyboard_process_raw_input();
   */
 keyboard_handler:
+  movi r14, 0 # need_refresh bool
   movia et, KEYBOARD
   movia r10, keyboard_buffer
 
@@ -415,8 +418,10 @@ delete_previous_is_f0:
 delete_previous_not_f0:
   movia et, user_input_length
   ldw r8, 0(et)
+  beq r8, r0, exit_ihandler # prevent overflow
   subi r8, r8, 1
   stw r8, 0(et)
+  movi r14, 1
   br exit_ihandler
 
 /* handle other chars */
@@ -436,6 +441,7 @@ previous_not_f0:
   # previous char is not f0 -> save to keyboard_buffer
   stb r9, 0(r10) # save data to keyboard_buffer
   addi r10, r10, 1 # increment r10
+  movi r14, 1
   br read_next_byte_raw_input
 
 keyboard_process_raw_input:

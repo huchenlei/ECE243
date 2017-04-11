@@ -51,6 +51,7 @@ TestItem6:  .asciz "lift"
 Separator:  .asciz " "
 SuccessString:       .asciz "Matching Success!                                                               "
 FailureString:       .asciz "Matching Failed!                                                                "
+NullString:          .asciz "                                                                                "
 
 ########################### VGA Interface Data ###########################
 ConfigurationConstants:
@@ -134,7 +135,9 @@ render_result:
   call AppendStringToHistory
   movia r4, VeryLongTestString2
   call AddNewStringToHistory
-
+  movia r4, Separator
+  call AddNewStringToHistory
+  
   # append test items
   movia r4, TestItem1
   call AddNewStringToHistory
@@ -159,7 +162,8 @@ render_result:
   movia r4, TestItem6
   call AddNewStringToHistory
   movia r4, Separator
-
+  call AddNewStringToHistory
+  
   # false: match failed
   beq r0, r5, render_result_match_failed
   # success
@@ -189,6 +193,11 @@ update_screen:
   stw r17, 8(sp) # result
 
   # update user input
+  call ClearCommandStringBuffer
+  movia r4, NullString
+  call AddNewStringToCommand
+  call REGameRefresh
+  
   call ClearCommandStringBuffer
   call get_input_string
   mov r4, r2

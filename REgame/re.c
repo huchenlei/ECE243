@@ -117,7 +117,7 @@ int match_char(re_node *this, char *current_char) {
     }
     printf("Char match: %c, %c\n", this->char_match, *current_char);
     if (this->num_of_children == 0) {
-        if (*(current_char + 1) != '\0') return false; else return true;
+        if (*(current_char + 1) != '\0') return false; else children_result = true;
     }
     return (this->char_match == *current_char) && children_result;
 }
