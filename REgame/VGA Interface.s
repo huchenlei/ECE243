@@ -42,12 +42,12 @@ PromptSymbol: .asciz "> "
 VeryLongTestString0: .asciz "********************************************************************************"
 VeryLongTestString1: .asciz "Regular Expression Matching Game:                                               " # one line
 VeryLongTestString2: .asciz "Please match item 1, 2, 3 from all items                                        "
-TestItem1:  .asciz "Advance"
-TestItem2:  .asciz "apple"
-TestItem3:  .asciz "Apple"
-TestItem4:  .asciz "Applle"
-TestItem5:  .asciz "adventure"
-TestItem6:  .asciz "today"
+TestItem1:  .asciz "a@"
+TestItem2:  .asciz "x@"
+TestItem3:  .asciz "b@"
+TestItem4:  .asciz "outlook.com"
+TestItem5:  .asciz ".net"
+TestItem6:  .asciz "lift"
 Separator:  .asciz " "
 SuccessString:       .asciz "Matching Success!                                                               "
 FailureString:       .asciz "Matching Failed!                                                                "
@@ -200,18 +200,18 @@ update_screen:
   # match item 1 ~ 3 (result should all be successful)
   movi r17, 1 # match result initially 1
   # match item 1
-  movia r4, TestItem1
-  mov r5, r16
+  movia r5, TestItem1
+  mov r4, r16
   call re_match
   and r17, r17, r2
   # match item 2
-  movia r4, TestItem2
-  mov r5, r16
+  movia r5, TestItem2
+  mov r4, r16
   call re_match
   and r17, r17, r2
   # match item 3
-  movia r4, TestItem3
-  mov r5, r16
+  movia r5, TestItem3
+  mov r4, r16
   call re_match
   and r17, r17, r2
   beq r17, r0, update_screen_match_failed
@@ -219,18 +219,18 @@ update_screen:
   # match item 4 ~ 6 (result should all be failed)
   movi r17, 0 # match result initially 0
   # match item 4
-  movia r4, TestItem4
-  mov r5, r16
+  movia r5, TestItem4
+  mov r4, r16
   call re_match
   or r17, r17, r2
   # match item 5
-  movia r4, TestItem5
-  mov r5, r16
+  movia r5, TestItem5
+  mov r4, r16
   call re_match
   or r17, r17, r2
   # match item 6
-  movia r4, TestItem6
-  mov r5, r16
+  movia r5, TestItem6
+  mov r4, r16
   call re_match
   or r17, r17, r2
   bne r17, r0, update_screen_match_failed

@@ -92,6 +92,10 @@ make_to_ascii_table:
   # \
   .byte 0x5d, 92
   
+  # .,
+  .byte 0x49, 46
+  .byte 0x41, 44
+  
   .align 2
 
 make_to_ascii_table_shift:
@@ -141,8 +145,11 @@ make_to_ascii_table_shift:
 
   # |
   .byte 0x5d, 124
-    .align 2
 
+  # <>
+  .byte 0x49, 60
+  .byte 0x41, 62
+  .align 2
   /******************** text section ********************/
   .text
   #.global _start
@@ -223,7 +230,7 @@ refresh_input_buffer:
   /* interrupt handling routines */
   ihandler:
   #prologue
-  subi sp, sp, 56
+  subi sp, sp, 60
   stw r8, 0(sp)
   stw r9, 4(sp)
   stw r10, 8(sp)
@@ -242,7 +249,8 @@ refresh_input_buffer:
   stw r7, 48(sp)
   stw r14, 52(sp)
   stw r15, 56(sp)
-
+  
+  
   rdctl et, ctl4 # read ipending
   andi et, et, 0x0080 # check IRQ line 7 (KEYBOARD)
   bne et, r0, keyboard_handler
@@ -276,8 +284,8 @@ exit_ihandler:
   ldw r7, 48(sp)
   ldw r14, 52(sp)
   ldw r15, 56(sp)
-
-  addi sp, sp, 56
+  
+  addi sp, sp, 60
 
   # re-execute the command on interrupt
   addi ea, ea, -4

@@ -41,12 +41,14 @@ void print_tree(re_node *root, int node_level);
 
 // sinple re, only support & | ()
 int re_match(char *re, char *text) {
+	printf("-------------------------\n");
     // construct re node tree
     re_node *root = construct_tree(re);
     // recursively call match char
     int result = false;
     for (int i = 0; i < root->num_of_children; ++i) {
         result = result || match_char(root->children_nodes[i], text);
+		printf("%d result is: %d \n", i, result);
     }
     delete_tree(root);
     return result;
