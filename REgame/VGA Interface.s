@@ -509,9 +509,12 @@ REGameGraphicsSetup:
 # Draws one frame of content using latestest strings
 # We are only updating texts since image doesn't need to be updated
 REGameRefresh:
-  # Push stack
-  addi sp, sp, -4
+	# Push stack
+	addi sp, sp, -4
     stw ra, 0(sp)
+	
+	# Clear character buffer
+    call ClearCharacterBuffer
 
     # Draw history/display text
     movi r4, 0 # 3
