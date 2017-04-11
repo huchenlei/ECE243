@@ -59,7 +59,6 @@ int main(int argc, char const *argv[]) {
     initialize_all();
     return 0;
 }
-
 re_node *construct_tree(char *re) {
     int current_bracket_level = 0;
     re_node *front_level_char[MAX_LEVEL_OF_GROUPS];
@@ -90,6 +89,7 @@ re_node *construct_tree(char *re) {
             int node_index = current_node->num_of_children;
             current_node->children_nodes[node_index] = new_node(*re);
             current_node->num_of_children++;
+            current_node->children_nodes[node_index]->num_of_parent += current_node->num_of_parent - 1;
             current_node = current_node->children_nodes[node_index];
 
             // consider or case

@@ -50,9 +50,9 @@ int re_match(char *re, char *text) {
 }
 
 int main(int argc, char const *argv[]) {
-    re_node *root = construct_tree("(abc)|(def(g)|(h))z");
-    print_tree(root, 0);
-    printf("match result: %d", re_match("(abc)|(def(g)|(h))z", "defgz"));
+//    re_node *root = construct_tree("(a)|(xss)|(bad)@gmail.com");
+//    print_tree(root, 0);
+    printf("match result: %d", re_match("(a)|(xss)|(bad)@gmail.com", "bad@gmail.com"));
     return 0;
 }
 
@@ -86,6 +86,7 @@ re_node *construct_tree(char *re) {
             int node_index = current_node->num_of_children;
             current_node->children_nodes[node_index] = new_node(*re);
             current_node->num_of_children++;
+            current_node->children_nodes[node_index]->num_of_parent += current_node->num_of_parent - 1;
             current_node = current_node->children_nodes[node_index];
 
             // consider or case
@@ -117,8 +118,8 @@ int match_char(re_node *this, char *current_char) {
 }
 
 void print_tree(re_node *root, int node_level) {
-    printf("Node char: %c, Node level: %d, Children num: %d. \n",
-           root->char_match, node_level, root->num_of_children);
+    printf("Node char: %c, Node level: %d, Children num: %d, Address: %p\n",
+           root->char_match, node_level, root->num_of_children, &root);
     for (int i = 0; i < root->num_of_children; i++) {
         print_tree(root->children_nodes[i], node_level + 1);
     }
