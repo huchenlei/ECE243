@@ -42,16 +42,16 @@ PromptSymbol: .asciz "> "
 VeryLongTestString0: .asciz "********************************************************************************"
 VeryLongTestString1: .asciz "Regular Expression Matching Game:                                               " # one line
 VeryLongTestString2: .asciz "Please match item 1, 2, 3 from all items                                        "
-TestItem1:  .asciz "a@"
-TestItem2:  .asciz "x@"
-TestItem3:  .asciz "b@"
+TestItem1:  .asciz "abc@gmail.com"
+TestItem2:  .asciz "xss@gmail.com"
+TestItem3:  .asciz "basic@outlook.com"
 TestItem4:  .asciz "outlook.com"
 TestItem5:  .asciz ".net"
-TestItem6:  .asciz "lift"
+TestItem6:  .asciz "ece243@mail.utoronto.ca"
 Separator:  .asciz " "
 SuccessString:       .asciz "Matching Success!                                                               "
 FailureString:       .asciz "Matching Failed!                                                                "
-NullString:          .asciz "                                                                                "
+NullString:          .asciz "   "
 
 ########################### VGA Interface Data ###########################
 ConfigurationConstants:
@@ -194,16 +194,13 @@ update_screen:
 
   # update user input
   call ClearCommandStringBuffer
-  movia r4, NullString
-  call AddNewStringToCommand
-  call REGameRefresh
-  
-  call ClearCommandStringBuffer
   call get_input_string
   mov r4, r2
   mov r16, r2
   call AddNewStringToCommand
-
+  movia r4, NullString
+  call AppendStringToCommand
+  
   # update matching result
 
   # match item 1 ~ 3 (result should all be successful)
