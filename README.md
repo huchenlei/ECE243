@@ -1,6 +1,6 @@
 # ECE243
 ## Computer Organization
-University of Toronto ECE243 2017 F
+University of Toronto ECE243 2017 S
 
 ## Lab 1 ~ 7
 Quite basic labs in the similar format as ECE241. Most of them could be easily simulated and debugged using the online simulator except Lab4, which is balancing a LEGO car. The second part could not be easily debugged online since the realtime feedback is needed.
