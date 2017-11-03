@@ -3,6 +3,7 @@
 
 # ignore class notes
 *.org
+*.tex
 
 # ignore compilation files generated Altera Monitor Program
 *.elf

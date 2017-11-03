@@ -18,8 +18,7 @@ Apr 8, 2017
 - Charlie: implemented delete key and space key
 
 Apr 10, 2017
-- Charlie: implemented a Regular Expression parser in C 
+- Charlie: implemented a Regular Expression parser in C
 
 Apr 11, 2017
-- Charlie: integrate re.c keyboard.s VGA_interface.s
-
+- Charlie: integrate re.c keyboard.s VGA_interface.s Fix the clear screen bug in VGA module
